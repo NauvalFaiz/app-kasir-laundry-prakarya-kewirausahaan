@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#b02228',
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fca5a5',
-          300: '#f87171',
-          400: '#ef4444',
-          500: '#b02228',
-          600: '#9a1d22',
-          700: '#7f171c',
-          800: '#661317',
-          900: '#4d0e11',
+          DEFAULT: '#104E89',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#104E89',
+          600: '#0D4070',
+          700: '#0A3258',
+          800: '#072440',
+          900: '#041628',
         },
         dark: {
           DEFAULT: '#3b4b50',
@@ -38,7 +38,7 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(176, 34, 40, 0.15)',
+        'glow': '0 0 20px rgba(16, 78, 137, 0.15)',
         'card': '0 4px 24px rgba(0,0,0,0.08)',
       },
       animation: {

@@ -85,9 +85,7 @@ export default function LandingPage() {
                 Mulai Gratis
                 <ArrowRight size={18} />
               </Link>
-              <Link to="/login?role=owner" className="btn-outline flex items-center justify-center gap-2 text-base px-8 py-3.5">
-                Login Owner
-              </Link>
+              
             </div>
 
             {/* Trust indicators */}

@@ -42,7 +42,7 @@ export default function App() {
               padding: '12px 16px',
             },
             success: { iconTheme: { primary: '#22c55e', secondary: '#fff' } },
-            error: { iconTheme: { primary: '#b02228', secondary: '#fff' } },
+            error: { iconTheme: { primary: '#104E89', secondary: '#fff' } },
           }}
         />
 

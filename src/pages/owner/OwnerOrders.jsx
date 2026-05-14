@@ -6,7 +6,7 @@ import {
 } from '../../api/endpoints';
 import toast from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
-import { Package, RefreshCw, X, QrCode, CheckCircle2, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Package, RefreshCw, X, QrCode, CheckCircle2, Plus, Trash2, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const STATUS_BADGES = {
   pending: 'badge-pending', pickup: 'badge-pickup', weighing: 'badge-process',
@@ -25,7 +25,7 @@ function QRModal({ order, onClose }) {
         </div>
         <div className="flex flex-col items-center gap-4">
           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200">
-            <QRCodeSVG value={order.payment_code || `ORDER-${order.id}`} size={200} fgColor="#b02228" />
+            <QRCodeSVG value={order.payment_code || `ORDER-${order.id}`} size={200} fgColor="#104E89" />
           </div>
           <div className="text-center">
             <p className="text-xs text-dark-400">Kode Pembayaran</p>
@@ -37,8 +37,6 @@ function QRModal({ order, onClose }) {
     </div>
   );
 }
-
-// OfflineOrderModal has been replaced by OwnerPOS.jsx
 
 function DeleteConfirmModal({ onClose, onConfirm, loading }) {
   return (
@@ -80,11 +78,16 @@ export default function OwnerOrders() {
   const [actionLoading, setActionLoading] = useState(null);
   const navigate = useNavigate();
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const fetch = async () => {
     setLoading(true);
     try {
       const res = await ownerOrdersAPI();
       setOrders(res.data || []);
+      setCurrentPage(1); // Reset to page 1 on fetch
     } catch {
       toast.error('Gagal memuat pesanan');
     } finally {
@@ -111,6 +114,18 @@ export default function OwnerOrders() {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const currentOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
   return (
     <DashboardLayout title="Manajemen Pesanan & Kasir" subtitle="Kelola pesanan online dan riwayat transaksi di sini.">
       <div className="flex justify-end items-center mb-6">
@@ -131,13 +146,13 @@ export default function OwnerOrders() {
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => {
+          {currentOrders.map((order) => {
             const isAL = (act) => actionLoading === `${order.id}-${act}`;
             return (
               <div key={order.id} className="card animate-fade-in group">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="font-bold text-dark-700">Order #{order.id}</span>
                       <span className={STATUS_BADGES[order.status] || 'badge bg-gray-100 text-gray-600'}>
                         {order.status}
@@ -147,6 +162,15 @@ export default function OwnerOrders() {
                       </span>
                       {order.laundry_location === 'Offline' && (
                         <span className="badge bg-purple-100 text-purple-700 font-bold">OFFLINE</span>
+                      )}
+                      {order.pickup_type === 'self' && order.laundry_location !== 'Offline' && (
+                        <span className="badge bg-cyan-100 text-cyan-700">📍 Antar Sendiri</span>
+                      )}
+                      {order.pickup_type === 'pickup' && (
+                        <span className="badge bg-orange-100 text-orange-700">🛵 Dijemput Kurir</span>
+                      )}
+                      {order.delivery_type && (
+                        <span className="badge bg-indigo-100 text-indigo-700">🚚 Delivery: {order.delivery_type}</span>
                       )}
                     </div>
                     <p className="text-sm text-dark-400">📍 {order.laundry_location}</p>
@@ -175,7 +199,7 @@ export default function OwnerOrders() {
                     )}
 
                     {/* Receive */}
-                    {order.status === 'to_laundry' && (
+                    {(order.status === 'to_laundry' || (order.pickup_type === 'self' && (order.status === 'pending' || order.status === 'paid'))) && (
                       <button onClick={() => doAction('receive', order.id)} disabled={isAL('receive')} className="btn-primary btn-sm">
                         {isAL('receive') ? '...' : 'Terima'}
                       </button>
@@ -192,6 +216,13 @@ export default function OwnerOrders() {
                     {order.status === 'process' && (
                       <button onClick={() => doAction('status', order.id, { status: 'done' })} disabled={isAL('status')} className="btn-dark btn-sm">
                         {isAL('status') ? '...' : 'Selesai'}
+                      </button>
+                    )}
+
+                    {/* Handover to Customer (Self-delivery) */}
+                    {order.status === 'done' && !order.delivery_type && (
+                      <button onClick={() => doAction('status', order.id, { status: 'completed' })} disabled={isAL('status')} className="btn-active btn-sm text-white bg-green-600 hover:bg-green-700">
+                        {isAL('status') ? '...' : 'Serahkan (Selesai)'}
                       </button>
                     )}
 
@@ -213,6 +244,32 @@ export default function OwnerOrders() {
               </div>
             );
           })}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 mt-6">
+              <span className="text-sm text-dark-400">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, orders.length)} dari {orders.length} pesanan
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                >
+                  <span className="text-sm font-medium">Lanjut</span>
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -230,3 +287,4 @@ export default function OwnerOrders() {
     </DashboardLayout>
   );
 }
+

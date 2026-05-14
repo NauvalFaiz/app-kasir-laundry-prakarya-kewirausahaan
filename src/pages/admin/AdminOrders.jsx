@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { adminOrdersAPI, adminUpdateOrderAPI } from '../../api/endpoints';
 import toast from 'react-hot-toast';
-import { ClipboardList, RefreshCw, Search, ChevronDown } from 'lucide-react';
+import { ClipboardList, RefreshCw, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const STATUS_OPTIONS = ['pending','pickup','weighing','to_laundry','received','process','done','delivery_back','shipped','completed','cancel'];
 
@@ -19,11 +19,16 @@ export default function AdminOrders() {
   const [search, setSearch] = useState('');
   const [updating, setUpdating] = useState(null);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const fetch = async () => {
     setLoading(true);
     try {
       const res = await adminOrdersAPI();
       setOrders(res.data.data || []);
+      setCurrentPage(1);
     } catch {
       toast.error('Gagal memuat pesanan');
     } finally {
@@ -53,6 +58,18 @@ export default function AdminOrders() {
       o.owner?.laundry_name?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Pagination logic
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const currentOrders = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
   return (
     <DashboardLayout title="Monitor Semua Pesanan" subtitle="Pantau dan kelola semua pesanan dalam sistem.">
       <div className="flex items-center gap-3 mb-4">
@@ -62,7 +79,10 @@ export default function AdminOrders() {
             className="input pl-9"
             placeholder="Cari ID, customer, laundry..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1); // Reset page on search
+            }}
           />
         </div>
         <button onClick={fetch} className="btn-ghost flex items-center gap-1.5 text-sm">
@@ -97,7 +117,7 @@ export default function AdminOrders() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((order) => (
+                {currentOrders.map((order) => (
                   <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-3 font-mono text-xs text-dark-500">#{order.id}</td>
                     <td className="px-5 py-3 text-dark-700">{order.user?.name || '-'}</td>
@@ -131,6 +151,32 @@ export default function AdminOrders() {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white p-4 border-t border-gray-100">
+              <span className="text-sm text-dark-400">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filtered.length)} dari {filtered.length} pesanan
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                >
+                  <span className="text-sm font-medium">Lanjut</span>
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </DashboardLayout>

@@ -4,7 +4,7 @@ import {
   courierOrdersAPI, assignOrderAPI, updateStepAPI, inputWeightAPI, deliveryBackAPI, courierConfirmPaymentAPI
 } from '../../api/endpoints';
 import toast from 'react-hot-toast';
-import { Package, RefreshCw, Truck, Scale, ArrowRight, MapPin, Info, CheckCircle2, QrCode } from 'lucide-react';
+import { Package, RefreshCw, Truck, Scale, ArrowRight, MapPin, Info, CheckCircle2, QrCode, ChevronLeft, ChevronRight, PackageOpen } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const getActions = (order) => {
@@ -13,7 +13,7 @@ const getActions = (order) => {
   if (s === 'pending') actions.push({ label: 'Ambil Pesanan', action: 'assign', color: 'btn-primary' });
   if (s === 'pickup') actions.push({ label: 'Mulai Timbang', action: 'weighing', color: 'btn-dark' });
   if (s === 'weighing') actions.push({ label: 'Input Berat & Antar', action: 'inputWeight', color: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-1.5 rounded-lg text-sm flex items-center gap-1 transition-colors' });
-  if (s === 'done') actions.push({ label: 'Antar Balik', action: 'delivery_back', color: 'btn-primary' });
+  if (s === 'done') actions.push({ label: 'Ambil Antaran (Delivery)', action: 'assign', color: 'btn-primary' });
   if (s === 'delivery_back') actions.push({ label: 'Sudah Dikirim', action: 'shipped', color: 'btn-dark' });
   if (s === 'shipped') actions.push({ label: 'Selesai', action: 'completed', color: 'bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-1.5 rounded-lg text-sm transition-colors' });
   return actions;
@@ -152,6 +152,11 @@ export default function CourierTasks() {
   const [actionLoading, setActionLoading] = useState(null);
   const [weightModal, setWeightModal] = useState(null);
   const [qrisModalOrder, setQrisModalOrder] = useState(null);
+  const [activeTab, setActiveTab] = useState('pickup');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetch = async () => {
     setLoading(true);
@@ -159,6 +164,7 @@ export default function CourierTasks() {
       const res = await courierOrdersAPI();
       const all = res.data.data || [];
       setOrders(all.filter(o => ['pending','pickup','weighing','to_laundry','done','delivery_back','shipped'].includes(o.status)));
+      setCurrentPage(1);
     } catch {
       toast.error('Gagal memuat data pesanan');
     } finally {
@@ -193,9 +199,58 @@ export default function CourierTasks() {
     }
   };
 
+  // Filter by tab
+  const pickupStatuses = ['pending', 'pickup', 'weighing', 'to_laundry'];
+  const deliveryStatuses = ['done', 'delivery_back', 'shipped'];
+  const filteredOrders = orders.filter(o =>
+    activeTab === 'pickup'
+      ? pickupStatuses.includes(o.status)
+      : deliveryStatuses.includes(o.status)
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const getTaskType = (order) => {
+    if (pickupStatuses.includes(order.status)) return 'pickup';
+    return 'delivery';
+  };
+
   return (
     <DashboardLayout title="Tugas Pengiriman" subtitle="Kelola pesanan pelanggan dari pickup hingga delivery balik.">
-      <div className="flex justify-end mb-4">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        {/* Tab Filter */}
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+          <button
+            onClick={() => { setActiveTab('pickup'); setCurrentPage(1); }}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+              activeTab === 'pickup'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-dark-400 hover:text-dark-600'
+            }`}
+          >
+            <Truck size={15} /> Pickup
+          </button>
+          <button
+            onClick={() => { setActiveTab('delivery'); setCurrentPage(1); }}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+              activeTab === 'delivery'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-dark-400 hover:text-dark-600'
+            }`}
+          >
+            <PackageOpen size={15} /> Delivery
+          </button>
+        </div>
         <button onClick={fetch} className="btn-ghost flex items-center gap-1.5 text-sm">
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Refresh
@@ -204,14 +259,14 @@ export default function CourierTasks() {
 
       {loading ? (
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="card h-24 bg-gray-100 animate-pulse" />)}</div>
-      ) : orders.length === 0 ? (
+      ) : filteredOrders.length === 0 ? (
         <div className="card text-center py-16">
           <Truck size={48} className="mx-auto mb-3 text-gray-300" />
-          <p className="text-dark-400">Tidak ada tugas tersedia</p>
+          <p className="text-dark-400">Tidak ada tugas {activeTab === 'pickup' ? 'pickup' : 'delivery'} tersedia</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => {
+          {currentOrders.map((order) => {
             const actions = getActions(order);
             const isAL = (act) => actionLoading === `${order.id}-${act}`;
             const canConfirm = order.payment_status !== 'paid' && (order.payment_method === 'tunai' || order.payment_method === 'qris');
@@ -220,8 +275,11 @@ export default function CourierTasks() {
               <div key={order.id} className="card animate-fade-in border-l-4 border-primary">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="font-bold text-dark-700">Order #{order.id}</span>
+                      <span className={`badge ${getTaskType(order) === 'pickup' ? 'bg-orange-100 text-orange-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                        {getTaskType(order) === 'pickup' ? '📦 Pickup' : '🚚 Delivery'}
+                      </span>
                       <span className={STATUS_BADGES[order.status] || 'badge bg-gray-100 text-gray-600'}>
                         {order.status}
                       </span>
@@ -235,7 +293,7 @@ export default function CourierTasks() {
                       {order.laundry_location}
                     </p>
                     <p className="text-xs text-dark-400 mt-1">
-                      💳 {order.payment_method?.toUpperCase()} · {order.pickup_type}
+                      💳 {order.payment_method?.toUpperCase()} · {order.pickup_type} {order.delivery_type ? `· Delivery: ${order.delivery_type}` : ''}
                     </p>
                   </div>
 
@@ -280,6 +338,32 @@ export default function CourierTasks() {
               </div>
             );
           })}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 mt-6">
+              <span className="text-sm text-dark-400">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, orders.length)} dari {orders.length} tugas
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                >
+                  <span className="text-sm font-medium">Lanjut</span>
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
