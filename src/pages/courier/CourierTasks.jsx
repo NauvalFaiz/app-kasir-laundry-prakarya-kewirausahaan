@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import {
-  adminOrdersAPI, assignOrderAPI, updateStepAPI, inputWeightAPI, deliveryBackAPI, courierConfirmPaymentAPI
+  courierOrdersAPI, assignOrderAPI, updateStepAPI, inputWeightAPI, deliveryBackAPI, courierConfirmPaymentAPI
 } from '../../api/endpoints';
 import toast from 'react-hot-toast';
 import { Package, RefreshCw, Truck, Scale, ArrowRight, MapPin, Info, CheckCircle2, QrCode } from 'lucide-react';
@@ -156,7 +156,7 @@ export default function CourierTasks() {
   const fetch = async () => {
     setLoading(true);
     try {
-      const res = await adminOrdersAPI();
+      const res = await courierOrdersAPI();
       const all = res.data.data || [];
       setOrders(all.filter(o => ['pending','pickup','weighing','to_laundry','done','delivery_back','shipped'].includes(o.status)));
     } catch {

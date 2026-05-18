@@ -1,165 +1,46 @@
-# RajaWash Owner Dashboard Web Apps
+# RajaWash - Web Dashboard Application
 
 ## 📌 Deskripsi Aplikasi
+Aplikasi antarmuka web (Frontend Web) ini dirancang khusus untuk ekosistem RajaWash. Web Apps ini difokuskan pada manajemen operasional, tampilan portal kasir/admin, dan pemantauan tugas-tugas kurir secara real-time. Sistem ini membantu pengelolaan bisnis laundry menjadi lebih modern, efisien, dan terintegrasi dalam satu dashboard management.
 
-Aplikasi ini dibuat menggunakan teknologi **React JS** dan **Vite** sebagai frontend modern dengan performa tinggi dan loading yang sangat cepat.  
-Web Apps ini terhubung langsung dengan aplikasi **RajaWash** dan dirancang khusus untuk kebutuhan **Owner** dan **Admin** dalam melakukan monitoring operasional laundry secara real-time.
+## 🚀 Teknologi Utama
+- **Framework Utama**: React JS (dibundel dan dijalankan menggunakan Vite)
+- **Styling**: Tailwind CSS & PostCSS
+- **Routing**: React Router DOM (`react-router-dom`)
+- **State Management**: Zustand / Redux (Sesuai kebutuhan)
+- **HTTP Client**: Axios
+- **Authentication**: JWT Authentication
+- **Integrasi Pembayaran**: Midtrans (QRIS, E-Wallet, VA, dll)
+- **Ikon & Komponen Tambahan**: Lucide React, React Hot Toast, QRCode React
 
-Sistem ini membantu pengelolaan bisnis laundry menjadi lebih modern, efisien, dan terintegrasi dalam satu dashboard management.
-
----
-
-# 🚀 Teknologi Yang Digunakan
-
-- React JS
-- Vite
-- Tailwind CSS
-- REST API Integration
-- Payment Gateway Midtrans
-- Axios
-- React Router DOM
-- Zustand / Redux
-- JWT Authentication
-
----
-
-# 🎯 Tujuan Web Apps
-
+## 🎯 Tujuan Web Apps
 Web aplikasi ini dibuat untuk:
+- Monitoring seluruh pesanan laundry secara real-time
+- Mengelola data user (tambah, edit, hapus, role) dan mitra
+- Mengontrol transaksi dan sistem kasir digital
+- Mengelola CRUD pesanan laundry dan riwayat pembayaran
 
-- Monitoring seluruh pesanan laundry
-- Mengelola data user dan mitra
-- Mengontrol transaksi pembayaran
-- Mempermudah management bisnis laundry
-- Monitoring pesanan berjalan secara realtime
-- Memiliki sistem kasir digital sendiri
-- Mengelola CRUD pesanan laundry
-- Melihat aktivitas mitra RajaWash
+## 👨‍💼 Fitur Owner Dashboard
+- **Dashboard Monitoring**: Melihat total pesanan, pendapatan, statistik, dan grafik pemasukan.
+- **Management User**: CRUD user dan role management.
+- **Management Pesanan**: Membuat pesanan, update status, dan riwayat transaksi.
+- **Monitoring Mitra**: Melacak aktivitas mitra dan progress pengerjaan.
+- **Sistem Kasir Digital**: Input transaksi, cetak invoice, dan integrasi Midtrans.
 
----
+## 📁 Struktur Folder Utama
+- `src/`: Folder utama kode sumber React.
+  - `pages/`: Halaman/rute aplikasi tingkat atas (misalnya `CourierTasks.jsx`, dasbor admin).
+  - `components/`: Komponen UI yang dapat digunakan kembali secara global.
+  - `assets/`: Berkas statis (gambar, ikon, logo).
+  - `layouts/`, `services/`, `hooks/`, `context/`, `utils/`: Pembagian logika arsitektural.
+- `public/`: Berkas publik murni yang tidak akan diproses oleh bundler (seperti `index.html`).
+- `tailwind.config.js`: Konfigurasi tema, palet warna, dan sistem desain.
+- `vite.config.js`: Pengaturan bundler dan server dev.
 
-# 👨‍💼 Fitur Owner Dashboard
-
-## ✅ Dashboard Monitoring
-Owner dapat melihat:
-
-- Total pesanan
-- Total pendapatan
-- Jumlah user aktif
-- Jumlah mitra aktif
-- Statistik transaksi
-- Grafik pemasukan
-
----
-
-## ✅ Management User
-
-Fitur CRUD User:
-
-- Tambah user
-- Edit user
-- Hapus user
-- Detail user
-- Role management
-
----
-
-## ✅ Management Pesanan
-
-Fitur CRUD Pesanan:
-
-- Membuat pesanan
-- Update status pesanan
-- Melihat detail pesanan
-- Riwayat transaksi
-- Filter status pesanan
-
----
-
-## ✅ Monitoring Mitra
-
-Owner dapat memonitor:
-
-- Pesanan yang sedang berjalan
-- Status laundry
-- Progress pengerjaan
-- Aktivitas mitra secara realtime
-
----
-
-## ✅ Sistem Kasir Digital
-
-Web aplikasi ini memiliki sistem kasir sendiri:
-
-- Input transaksi
-- Cetak invoice
-- Riwayat pembayaran
-- Perhitungan otomatis
-- Integrasi pembayaran digital
-
----
-
-# 💳 Payment Gateway
-
-Sistem pembayaran sudah terintegrasi menggunakan:
-
-## Midtrans
-
-Fitur pembayaran:
-
-- QRIS
-- E-Wallet
-- Transfer Bank
-- Virtual Account
-- Real-time Payment Notification
-
----
-
-# 🔐 Security System
-
-Sistem keamanan menggunakan:
-
-- JWT Authentication
-- Protected Route
-- Role Based Access
-- Secure API Request
-- Token Validation
-
----
-
-# 📡 Integrasi API
-
-Frontend React terhubung dengan Backend API menggunakan:
-
-- REST API
-- Axios Request
-- JSON Response
-- Authentication Token
-
----
-
-# ⚡ Keunggulan Aplikasi
-
-- Modern UI/UX
-- Fast Performance menggunakan Vite
-- Responsive Design
-- Realtime Monitoring
-- Scalable Architecture
-- Clean Code Structure
-- Integrated Payment System
-
----
-
-# 📁 Struktur Project
-
-```bash
-src/
- ├── components/
- ├── pages/
- ├── layouts/
- ├── services/
- ├── hooks/
- ├── context/
- ├── routes/
- ├── assets/
- └── utils/
+## 💻 Cara Menjalankan
+1. Pastikan Node.js terinstal.
+2. Masuk ke direktori `frontend_web`.
+3. Install dependencies: `npm install`
+4. Jalankan server lokal: `npm run dev`
+5. Build untuk production: `npm run build`
+6. Pratinjau hasil build: `npm run preview`

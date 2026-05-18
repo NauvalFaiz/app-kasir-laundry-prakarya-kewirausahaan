@@ -21,6 +21,7 @@ export const myOrdersAPI = () => api.get('/my-orders');
 // ============================================================
 // COURIER
 // ============================================================
+export const courierOrdersAPI = () => api.get('/courier/orders');
 export const assignOrderAPI = (data) => api.post('/courier/assign', data);
 export const updateStepAPI = (data) => api.post('/courier/step', data);
 export const inputWeightAPI = (data) => api.post('/courier/weight', data);
